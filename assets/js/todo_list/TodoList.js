@@ -9,7 +9,7 @@ export default class TodoList {
         this.form.addEventListener("submit", (e) => {this.addNewTask(e)});
 
         this.render();
-        State.subscribe(this.render.bind(this));
+        State.subscribe(() => this.render());
     }
 
     _setId() {

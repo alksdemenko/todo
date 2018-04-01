@@ -9108,7 +9108,9 @@ var TodoList = function () {
         });
 
         this.render();
-        __WEBPACK_IMPORTED_MODULE_0__state__["a" /* default */].subscribe(this.render.bind(this));
+        __WEBPACK_IMPORTED_MODULE_0__state__["a" /* default */].subscribe(function () {
+            return _this.render();
+        });
     }
 
     _createClass(TodoList, [{
