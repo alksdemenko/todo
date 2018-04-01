@@ -9194,6 +9194,7 @@ var TodoList = function () {
 
                     var textField = document.createElement('input');
                     textField.setAttribute('type', 'text');
+                    textField.setAttribute('autocomplete', 'off');
                     textField.setAttribute('value', todo.text);
 
                     var checkBox = document.createElement('input');

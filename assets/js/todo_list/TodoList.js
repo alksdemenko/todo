@@ -82,6 +82,7 @@ export default class TodoList {
 
                 const textField = document.createElement('input');
                 textField.setAttribute('type', 'text');
+                textField.setAttribute('autocomplete', 'off');
                 textField.setAttribute('value', todo.text);
 
                 const checkBox = document.createElement('input');
