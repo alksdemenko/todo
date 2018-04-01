@@ -3710,10 +3710,49 @@ module.exports = Math.scale || function scale(x, inLow, inHigh, outLow, outHigh)
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-var storage = localStorage.getItem('state');
-var state = storage ? JSON.parse(storage) : { todos: [] };
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-/* harmony default export */ __webpack_exports__["a"] = (state);
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+// const storage = localStorage.getItem('state');
+// const state = storage ? JSON.parse(storage) : {todos: []};
+
+var State = function () {
+    function State() {
+        _classCallCheck(this, State);
+
+        this.subscribers = [];
+        this.state = { todos: [] };
+    }
+
+    _createClass(State, [{
+        key: "subscribe",
+        value: function subscribe(fn) {
+            this.subscribers.push(fn);
+        }
+    }, {
+        key: "setState",
+        value: function setState(obj) {
+            return Object.assign({}, obj, this.state);
+        }
+    }, {
+        key: "getState",
+        value: function getState() {
+            return this.state;
+        }
+    }, {
+        key: "notify",
+        value: function notify() {
+            this.subscribers.forEach(function (func) {
+                return func();
+            });
+        }
+    }]);
+
+    return State;
+}();
+
+/* harmony default export */ __webpack_exports__["a"] = (new State());
 
 /***/ }),
 /* 126 */
@@ -9066,7 +9105,10 @@ var TodoList = function () {
             _this.addNewTask(e);
             _this.notify();
         });
-        this.render();
+
+        // this.state = new State();
+        __WEBPACK_IMPORTED_MODULE_0__state__["a" /* default */].subscribe(this.render);
+        // this.render();
     }
 
     _createClass(TodoList, [{
@@ -9132,7 +9174,7 @@ var TodoList = function () {
             var _this2 = this;
 
             this.list.innerHTML = '';
-            __WEBPACK_IMPORTED_MODULE_0__state__["a" /* default */].todos.forEach(function (todo) {
+            __WEBPACK_IMPORTED_MODULE_0__state__["a" /* default */].getState().todos.forEach(function (todo) {
                 var li = document.createElement('li');
 
                 var listForm = document.createElement('form');
@@ -9221,27 +9263,25 @@ var TodoList = function () {
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return cancelEditingMode; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return changeTaskName; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__mutations__ = __webpack_require__(331);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__state__ = __webpack_require__(125);
-
 
 
 var addNewTask = function addNewTask(task) {
-  return Object(__WEBPACK_IMPORTED_MODULE_0__mutations__["a" /* reducer */])(__WEBPACK_IMPORTED_MODULE_1__state__["a" /* default */], { type: 'ADD_NEW_TASK', task: task });
+    Object(__WEBPACK_IMPORTED_MODULE_0__mutations__["a" /* reducer */])({ type: 'ADD_NEW_TASK', task: task });
 };
 var removeTask = function removeTask(id) {
-  return Object(__WEBPACK_IMPORTED_MODULE_0__mutations__["a" /* reducer */])(__WEBPACK_IMPORTED_MODULE_1__state__["a" /* default */], { type: 'REMOVE_TASK', id: id });
+    return Object(__WEBPACK_IMPORTED_MODULE_0__mutations__["a" /* reducer */])({ type: 'REMOVE_TASK', id: id });
 };
 var setTaskStatus = function setTaskStatus(id) {
-  return Object(__WEBPACK_IMPORTED_MODULE_0__mutations__["a" /* reducer */])(__WEBPACK_IMPORTED_MODULE_1__state__["a" /* default */], { type: 'SET_TASK_STATUS', id: id });
+    return Object(__WEBPACK_IMPORTED_MODULE_0__mutations__["a" /* reducer */])({ type: 'SET_TASK_STATUS', id: id });
 };
 var applyEditingMode = function applyEditingMode(id) {
-  return Object(__WEBPACK_IMPORTED_MODULE_0__mutations__["a" /* reducer */])(__WEBPACK_IMPORTED_MODULE_1__state__["a" /* default */], { type: 'APPLY_EDITING_MODE', id: id });
+    return Object(__WEBPACK_IMPORTED_MODULE_0__mutations__["a" /* reducer */])({ type: 'APPLY_EDITING_MODE', id: id });
 };
 var cancelEditingMode = function cancelEditingMode(id) {
-  return Object(__WEBPACK_IMPORTED_MODULE_0__mutations__["a" /* reducer */])(__WEBPACK_IMPORTED_MODULE_1__state__["a" /* default */], { type: 'CANCEL_EDITING_MODE', id: id });
+    return Object(__WEBPACK_IMPORTED_MODULE_0__mutations__["a" /* reducer */])({ type: 'CANCEL_EDITING_MODE', id: id });
 };
 var changeTaskName = function changeTaskName(id, value) {
-  return Object(__WEBPACK_IMPORTED_MODULE_0__mutations__["a" /* reducer */])(__WEBPACK_IMPORTED_MODULE_1__state__["a" /* default */], { type: 'CHANGE_TASK_NAME', id: id, value: value });
+    return Object(__WEBPACK_IMPORTED_MODULE_0__mutations__["a" /* reducer */])({ type: 'CHANGE_TASK_NAME', id: id, value: value });
 };
 
 /***/ }),
@@ -9250,52 +9290,56 @@ var changeTaskName = function changeTaskName(id, value) {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return reducer; });
-var reducer = function reducer(state, action) {
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__state__ = __webpack_require__(125);
+
+
+var reducer = function reducer(action) {
     switch (action.type) {
         case 'ADD_NEW_TASK':
-            state.todos.unshift(action.task);
+            console.log(__WEBPACK_IMPORTED_MODULE_0__state__["a" /* default */]);
+            // let todos = State.getState().todos.unshift(action.task)
+            // State.setState({todos});
             break;
-        case 'REMOVE_TASK':
-            state.todos = state.todos.filter(function (item) {
-                return item.id !== Number(action.id);
-            });
-            break;
-        case 'APPLY_EDITING_MODE':
-            state.todos = state.todos.map(function (item) {
-                if (item.id === Number(action.id)) item.editMode = true;
-                return item;
-            });
-            break;
-        case 'CANCEL_EDITING_MODE':
-            state.todos = state.todos.map(function (item) {
-                if (item.id === Number(action.id)) item.editMode = false;
-                return item;
-            });
-            break;
-        case 'CHANGE_TASK_NAME':
-            state.todos = state.todos.map(function (elem) {
-                if (elem.id === Number(action.id)) {
-                    elem.text = action.value;
-                    elem.editMode = false;
-                }
-                return elem;
-            });
-            break;
-        case 'SET_TASK_STATUS':
-            state.todos = state.todos.map(function (item) {
-                if (item.id === Number(action.id)) item.checked = !item.checked;
-                return item;
-            });
-
-            state.todos.forEach(function (elem) {
-                if (elem.checked) {
-                    var index = state.todos.indexOf(elem);
-                    state.todos.splice(index, 1);
-                    state.todos.push(elem);
-                }
-                return elem;
-            });
-            break;
+        // case 'REMOVE_TASK':
+        //     let todos = State.getState().todos.filter(item => item.id !== Number(action.id));
+        //     State.setState({todos});
+        //     break;
+        // case 'APPLY_EDITING_MODE':
+        //     state.todos = state.todos.map(item => {
+        //         if (item.id === Number(action.id)) item.editMode = true;
+        //         return item;
+        //     });
+        //     break;
+        // case 'CANCEL_EDITING_MODE':
+        //     state.todos = state.todos.map(item => {
+        //         if (item.id === Number(action.id)) item.editMode = false;
+        //         return item;
+        //     });
+        //     break;
+        // case 'CHANGE_TASK_NAME':
+        //     state.todos = state.todos.map(elem => {
+        //         if (elem.id === Number(action.id)) {
+        //             elem.text = action.value;
+        //             elem.editMode = false;
+        //         }
+        //         return elem;
+        //     })
+        //     break;
+        // case 'SET_TASK_STATUS':
+        //     state.todos = state.todos.map(item => {
+        //         if (item.id === Number(action.id)) item.checked = !item.checked;
+        //         return item;
+        //     });
+        //
+        //     state.todos.forEach(elem => {
+        //         if (elem.checked) {
+        //             const index = state.todos.indexOf(elem);
+        //             state.todos.splice(index, 1);
+        //             state.todos.push(elem);
+        //         }
+        //         return elem
+        //     });
+        //     break;
     }
 };
 

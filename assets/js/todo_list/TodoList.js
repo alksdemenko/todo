@@ -1,5 +1,5 @@
-import state from './state';
-import * as actions from './actions'
+import State from './state';
+import * as actions from './actions';
 
 export default class TodoList {
     constructor() {
@@ -8,12 +8,15 @@ export default class TodoList {
         this.list = document.querySelector('.todo-list');
         this.form.addEventListener("submit", (e) => {
             this.addNewTask(e);
-            this.notify()
+            this.notify();
         });
-        this.render();
+
+        // this.state = new State();
+        State.subscribe(this.render);
+        // this.render();
     }
 
-    notify(){
+    notify() {
         this.render();
     }
 
@@ -64,7 +67,7 @@ export default class TodoList {
 
     render() {
         this.list.innerHTML = '';
-        state.todos.forEach(todo => {
+        State.getState().todos.forEach(todo => {
             const li = document.createElement('li');
 
             const listForm = document.createElement('form');
@@ -132,6 +135,6 @@ export default class TodoList {
                 this.notify();
             })
         });
-        localStorage.setItem('state', JSON.stringify(state));
+        localStorage.setItem('state', JSON.stringify(State));
     }
 }
