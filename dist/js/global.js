@@ -3714,34 +3714,36 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-// const storage = localStorage.getItem('state');
-// const state = storage ? JSON.parse(storage) : {todos: []};
+var storage = localStorage.getItem('store');
 
 var State = function () {
     function State() {
         _classCallCheck(this, State);
 
         this.subscribers = [];
-        this.state = { todos: [] };
+        this.state = {
+            todos: storage ? JSON.parse(storage) : []
+        };
     }
 
     _createClass(State, [{
-        key: "subscribe",
+        key: 'subscribe',
         value: function subscribe(fn) {
             this.subscribers.push(fn);
         }
     }, {
-        key: "setState",
+        key: 'setState',
         value: function setState(obj) {
-            return Object.assign({}, obj, this.state);
+            this.state = Object.assign({}, this.state, obj);
+            this.notify();
         }
     }, {
-        key: "getState",
+        key: 'getState',
         value: function getState() {
             return this.state;
         }
     }, {
-        key: "notify",
+        key: 'notify',
         value: function notify() {
             this.subscribers.forEach(function (func) {
                 return func();
@@ -9103,20 +9105,13 @@ var TodoList = function () {
         this.list = document.querySelector('.todo-list');
         this.form.addEventListener("submit", function (e) {
             _this.addNewTask(e);
-            _this.notify();
         });
 
-        // this.state = new State();
-        __WEBPACK_IMPORTED_MODULE_0__state__["a" /* default */].subscribe(this.render);
-        // this.render();
+        this.render();
+        __WEBPACK_IMPORTED_MODULE_0__state__["a" /* default */].subscribe(this.render.bind(this));
     }
 
     _createClass(TodoList, [{
-        key: 'notify',
-        value: function notify() {
-            this.render();
-        }
-    }, {
         key: '_setId',
         value: function _setId() {
             return new Date().getTime();
@@ -9174,75 +9169,73 @@ var TodoList = function () {
             var _this2 = this;
 
             this.list.innerHTML = '';
-            __WEBPACK_IMPORTED_MODULE_0__state__["a" /* default */].getState().todos.forEach(function (todo) {
-                var li = document.createElement('li');
+            var list = __WEBPACK_IMPORTED_MODULE_0__state__["a" /* default */].getState().todos;
+            if (list.length > 0) {
+                list.forEach(function (todo) {
+                    var li = document.createElement('li');
 
-                var listForm = document.createElement('form');
-                listForm.className = 'edit-task';
+                    var listForm = document.createElement('form');
+                    listForm.className = 'edit-task';
 
-                var removeButton = document.createElement('button');
-                removeButton.className = 'remove-task';
+                    var removeButton = document.createElement('button');
+                    removeButton.className = 'remove-task';
 
-                var saveButton = document.createElement('input');
-                saveButton.setAttribute('type', 'submit');
-                saveButton.setAttribute('value', 'save');
-                saveButton.className = 'button save';
+                    var saveButton = document.createElement('input');
+                    saveButton.setAttribute('type', 'submit');
+                    saveButton.setAttribute('value', 'save');
+                    saveButton.className = 'button save';
 
-                var cancelButton = document.createElement('input');
-                cancelButton.setAttribute('value', 'cancel');
-                cancelButton.setAttribute('type', 'button');
-                cancelButton.className = 'button cancel';
+                    var cancelButton = document.createElement('input');
+                    cancelButton.setAttribute('value', 'cancel');
+                    cancelButton.setAttribute('type', 'button');
+                    cancelButton.className = 'button cancel';
 
-                var textField = document.createElement('input');
-                textField.setAttribute('type', 'text');
-                textField.setAttribute('value', todo.text);
+                    var textField = document.createElement('input');
+                    textField.setAttribute('type', 'text');
+                    textField.setAttribute('value', todo.text);
 
-                var checkBox = document.createElement('input');
-                checkBox.setAttribute('type', 'checkbox');
-                checkBox.className = 'todo-checkbox';
-                todo.checked ? checkBox.setAttribute('checked', todo.checked) : false;
-                todo.editMode ? checkBox.setAttribute('disabled', 'disabled') : false;
+                    var checkBox = document.createElement('input');
+                    checkBox.setAttribute('type', 'checkbox');
+                    checkBox.className = 'todo-checkbox';
+                    todo.checked ? checkBox.setAttribute('checked', todo.checked) : false;
+                    todo.editMode ? checkBox.setAttribute('disabled', 'disabled') : false;
 
-                var textStyle = todo.checked ? 's' : 'span';
+                    var textStyle = todo.checked ? 's' : 'span';
 
-                var taskText = document.createElement(textStyle);
-                taskText.className = 'task-text';
-                taskText.textContent = todo.text;
+                    var taskText = document.createElement(textStyle);
+                    taskText.className = 'task-text';
+                    taskText.textContent = todo.text;
 
-                listForm.appendChild(textField);
-                listForm.appendChild(saveButton);
-                listForm.appendChild(cancelButton);
+                    listForm.appendChild(textField);
+                    listForm.appendChild(saveButton);
+                    listForm.appendChild(cancelButton);
 
-                var taskContent = !todo.editMode ? taskText : listForm;
+                    var taskContent = !todo.editMode ? taskText : listForm;
 
-                li.appendChild(checkBox);
-                li.appendChild(taskContent);
-                li.appendChild(removeButton);
+                    li.appendChild(checkBox);
+                    li.appendChild(taskContent);
+                    li.appendChild(removeButton);
 
-                _this2.list.appendChild(li);
+                    _this2.list.appendChild(li);
 
-                removeButton.addEventListener('click', function () {
-                    _this2.removeTask(todo.id);
-                    _this2.notify();
+                    removeButton.addEventListener('click', function () {
+                        _this2.removeTask(todo.id);
+                    });
+                    checkBox.addEventListener('change', function () {
+                        _this2.setTaskStatus(todo.id);
+                    });
+                    taskText.addEventListener('dblclick', function () {
+                        _this2.applyEditingMode(todo.id);
+                    });
+                    listForm.addEventListener('submit', function (e) {
+                        _this2.changeTaskName(todo.id, e);
+                    });
+                    cancelButton.addEventListener('click', function (e) {
+                        _this2.cancelEditingMode(todo.id, e);
+                    });
                 });
-                checkBox.addEventListener('change', function () {
-                    _this2.setTaskStatus(todo.id);
-                    _this2.notify();
-                });
-                taskText.addEventListener('dblclick', function () {
-                    _this2.applyEditingMode(todo.id);
-                    _this2.notify();
-                });
-                listForm.addEventListener('submit', function (e) {
-                    _this2.changeTaskName(todo.id, e);
-                    _this2.notify();
-                });
-                cancelButton.addEventListener('click', function (e) {
-                    _this2.cancelEditingMode(todo.id, e);
-                    _this2.notify();
-                });
-            });
-            localStorage.setItem('state', JSON.stringify(__WEBPACK_IMPORTED_MODULE_0__state__["a" /* default */]));
+            }
+            localStorage.setItem('store', JSON.stringify(__WEBPACK_IMPORTED_MODULE_0__state__["a" /* default */].getState().todos));
         }
     }]);
 
@@ -9266,22 +9259,22 @@ var TodoList = function () {
 
 
 var addNewTask = function addNewTask(task) {
-    Object(__WEBPACK_IMPORTED_MODULE_0__mutations__["a" /* reducer */])({ type: 'ADD_NEW_TASK', task: task });
+  return Object(__WEBPACK_IMPORTED_MODULE_0__mutations__["a" /* reducer */])({ type: 'ADD_NEW_TASK', task: task });
 };
 var removeTask = function removeTask(id) {
-    return Object(__WEBPACK_IMPORTED_MODULE_0__mutations__["a" /* reducer */])({ type: 'REMOVE_TASK', id: id });
+  return Object(__WEBPACK_IMPORTED_MODULE_0__mutations__["a" /* reducer */])({ type: 'REMOVE_TASK', id: id });
 };
 var setTaskStatus = function setTaskStatus(id) {
-    return Object(__WEBPACK_IMPORTED_MODULE_0__mutations__["a" /* reducer */])({ type: 'SET_TASK_STATUS', id: id });
+  return Object(__WEBPACK_IMPORTED_MODULE_0__mutations__["a" /* reducer */])({ type: 'SET_TASK_STATUS', id: id });
 };
 var applyEditingMode = function applyEditingMode(id) {
-    return Object(__WEBPACK_IMPORTED_MODULE_0__mutations__["a" /* reducer */])({ type: 'APPLY_EDITING_MODE', id: id });
+  return Object(__WEBPACK_IMPORTED_MODULE_0__mutations__["a" /* reducer */])({ type: 'APPLY_EDITING_MODE', id: id });
 };
 var cancelEditingMode = function cancelEditingMode(id) {
-    return Object(__WEBPACK_IMPORTED_MODULE_0__mutations__["a" /* reducer */])({ type: 'CANCEL_EDITING_MODE', id: id });
+  return Object(__WEBPACK_IMPORTED_MODULE_0__mutations__["a" /* reducer */])({ type: 'CANCEL_EDITING_MODE', id: id });
 };
 var changeTaskName = function changeTaskName(id, value) {
-    return Object(__WEBPACK_IMPORTED_MODULE_0__mutations__["a" /* reducer */])({ type: 'CHANGE_TASK_NAME', id: id, value: value });
+  return Object(__WEBPACK_IMPORTED_MODULE_0__mutations__["a" /* reducer */])({ type: 'CHANGE_TASK_NAME', id: id, value: value });
 };
 
 /***/ }),
@@ -9296,50 +9289,64 @@ var changeTaskName = function changeTaskName(id, value) {
 var reducer = function reducer(action) {
     switch (action.type) {
         case 'ADD_NEW_TASK':
-            console.log(__WEBPACK_IMPORTED_MODULE_0__state__["a" /* default */]);
-            // let todos = State.getState().todos.unshift(action.task)
-            // State.setState({todos});
+            var todos = __WEBPACK_IMPORTED_MODULE_0__state__["a" /* default */].getState().todos;
+            todos.unshift(action.task);
+            __WEBPACK_IMPORTED_MODULE_0__state__["a" /* default */].setState({ 'todos': todos });
             break;
-        // case 'REMOVE_TASK':
-        //     let todos = State.getState().todos.filter(item => item.id !== Number(action.id));
-        //     State.setState({todos});
-        //     break;
-        // case 'APPLY_EDITING_MODE':
-        //     state.todos = state.todos.map(item => {
-        //         if (item.id === Number(action.id)) item.editMode = true;
-        //         return item;
-        //     });
-        //     break;
-        // case 'CANCEL_EDITING_MODE':
-        //     state.todos = state.todos.map(item => {
-        //         if (item.id === Number(action.id)) item.editMode = false;
-        //         return item;
-        //     });
-        //     break;
-        // case 'CHANGE_TASK_NAME':
-        //     state.todos = state.todos.map(elem => {
-        //         if (elem.id === Number(action.id)) {
-        //             elem.text = action.value;
-        //             elem.editMode = false;
-        //         }
-        //         return elem;
-        //     })
-        //     break;
-        // case 'SET_TASK_STATUS':
-        //     state.todos = state.todos.map(item => {
-        //         if (item.id === Number(action.id)) item.checked = !item.checked;
-        //         return item;
-        //     });
-        //
-        //     state.todos.forEach(elem => {
-        //         if (elem.checked) {
-        //             const index = state.todos.indexOf(elem);
-        //             state.todos.splice(index, 1);
-        //             state.todos.push(elem);
-        //         }
-        //         return elem
-        //     });
-        //     break;
+
+        case 'REMOVE_TASK':
+            __WEBPACK_IMPORTED_MODULE_0__state__["a" /* default */].setState({ todos: __WEBPACK_IMPORTED_MODULE_0__state__["a" /* default */].getState().todos.filter(function (item) {
+                    return item.id !== Number(action.id);
+                }) });
+            break;
+
+        case 'APPLY_EDITING_MODE':
+
+            __WEBPACK_IMPORTED_MODULE_0__state__["a" /* default */].setState({
+                todos: __WEBPACK_IMPORTED_MODULE_0__state__["a" /* default */].getState().todos.map(function (item) {
+                    if (item.id === Number(action.id)) item.editMode = true;
+                    return item;
+                })
+            });
+            break;
+
+        case 'CANCEL_EDITING_MODE':
+            __WEBPACK_IMPORTED_MODULE_0__state__["a" /* default */].setState({
+                todos: __WEBPACK_IMPORTED_MODULE_0__state__["a" /* default */].getState().todos.map(function (item) {
+                    if (item.id === Number(action.id)) item.editMode = false;
+                    return item;
+                })
+            });
+            break;
+
+        case 'CHANGE_TASK_NAME':
+            __WEBPACK_IMPORTED_MODULE_0__state__["a" /* default */].setState({
+                todos: __WEBPACK_IMPORTED_MODULE_0__state__["a" /* default */].getState().todos.map(function (elem) {
+                    if (elem.id === Number(action.id)) {
+                        elem.text = action.value;
+                        elem.editMode = false;
+                    }
+                    return elem;
+                })
+            });
+            break;
+
+        case 'SET_TASK_STATUS':
+            var checkedTasks = __WEBPACK_IMPORTED_MODULE_0__state__["a" /* default */].getState().todos.map(function (item) {
+                if (item.id === Number(action.id)) item.checked = !item.checked;
+                return item;
+            });
+
+            checkedTasks.forEach(function (elem) {
+                if (elem.checked) {
+                    var index = checkedTasks.indexOf(elem);
+                    checkedTasks.splice(index, 1);
+                    checkedTasks.push(elem);
+                }
+            });
+
+            __WEBPACK_IMPORTED_MODULE_0__state__["a" /* default */].setState({ todos: checkedTasks });
+            break;
     }
 };
 

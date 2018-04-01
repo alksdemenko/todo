@@ -6,18 +6,10 @@ export default class TodoList {
         this.form = document.querySelector('#main-form');
         this.textHolder = document.querySelector('#main-text-holder');
         this.list = document.querySelector('.todo-list');
-        this.form.addEventListener("submit", (e) => {
-            this.addNewTask(e);
-            this.notify();
-        });
+        this.form.addEventListener("submit", (e) => {this.addNewTask(e)});
 
-        // this.state = new State();
-        State.subscribe(this.render);
-        // this.render();
-    }
-
-    notify() {
         this.render();
+        State.subscribe(this.render.bind(this));
     }
 
     _setId() {
@@ -67,74 +59,72 @@ export default class TodoList {
 
     render() {
         this.list.innerHTML = '';
-        State.getState().todos.forEach(todo => {
-            const li = document.createElement('li');
+        const list = State.getState().todos;
+        if(list.length > 0){
+            list.forEach(todo => {
+                const li = document.createElement('li');
 
-            const listForm = document.createElement('form');
-            listForm.className = 'edit-task';
+                const listForm = document.createElement('form');
+                listForm.className = 'edit-task';
 
-            const removeButton = document.createElement('button');
-            removeButton.className = 'remove-task';
+                const removeButton = document.createElement('button');
+                removeButton.className = 'remove-task';
 
-            const saveButton = document.createElement('input');
-            saveButton.setAttribute('type', 'submit');
-            saveButton.setAttribute('value', 'save');
-            saveButton.className = 'button save';
+                const saveButton = document.createElement('input');
+                saveButton.setAttribute('type', 'submit');
+                saveButton.setAttribute('value', 'save');
+                saveButton.className = 'button save';
 
-            const cancelButton = document.createElement('input');
-            cancelButton.setAttribute('value', 'cancel');
-            cancelButton.setAttribute('type', 'button');
-            cancelButton.className = 'button cancel';
+                const cancelButton = document.createElement('input');
+                cancelButton.setAttribute('value', 'cancel');
+                cancelButton.setAttribute('type', 'button');
+                cancelButton.className = 'button cancel';
 
-            const textField = document.createElement('input');
-            textField.setAttribute('type', 'text');
-            textField.setAttribute('value', todo.text);
+                const textField = document.createElement('input');
+                textField.setAttribute('type', 'text');
+                textField.setAttribute('value', todo.text);
 
-            const checkBox = document.createElement('input');
-            checkBox.setAttribute('type', 'checkbox');
-            checkBox.className = 'todo-checkbox';
-            todo.checked ? checkBox.setAttribute('checked', todo.checked) : false;
-            todo.editMode ? checkBox.setAttribute('disabled', 'disabled') : false;
+                const checkBox = document.createElement('input');
+                checkBox.setAttribute('type', 'checkbox');
+                checkBox.className = 'todo-checkbox';
+                todo.checked ? checkBox.setAttribute('checked', todo.checked) : false;
+                todo.editMode ? checkBox.setAttribute('disabled', 'disabled') : false;
 
-            const textStyle = todo.checked ? 's' : 'span';
+                const textStyle = todo.checked ? 's' : 'span';
 
-            const taskText = document.createElement(textStyle);
-            taskText.className = 'task-text';
-            taskText.textContent = todo.text;
+                const taskText = document.createElement(textStyle);
+                taskText.className = 'task-text';
+                taskText.textContent = todo.text;
 
-            listForm.appendChild(textField);
-            listForm.appendChild(saveButton);
-            listForm.appendChild(cancelButton);
+                listForm.appendChild(textField);
+                listForm.appendChild(saveButton);
+                listForm.appendChild(cancelButton);
 
-            const taskContent = !todo.editMode ? taskText : listForm;
+                const taskContent = !todo.editMode ? taskText : listForm;
 
-            li.appendChild(checkBox);
-            li.appendChild(taskContent);
-            li.appendChild(removeButton);
+                li.appendChild(checkBox);
+                li.appendChild(taskContent);
+                li.appendChild(removeButton);
 
-            this.list.appendChild(li);
+                this.list.appendChild(li);
 
-            removeButton.addEventListener('click', () => {
-                this.removeTask(todo.id);
-                this.notify();
+                removeButton.addEventListener('click', () => {
+                    this.removeTask(todo.id);
+                });
+                checkBox.addEventListener('change', () => {
+                    this.setTaskStatus(todo.id);
+                });
+                taskText.addEventListener('dblclick', () => {
+                    this.applyEditingMode(todo.id);
+                });
+                listForm.addEventListener('submit', e => {
+                    this.changeTaskName(todo.id, e);
+                });
+                cancelButton.addEventListener('click', e => {
+                    this.cancelEditingMode(todo.id, e);
+                })
             });
-            checkBox.addEventListener('change', () => {
-                this.setTaskStatus(todo.id);
-                this.notify();
-            });
-            taskText.addEventListener('dblclick', () => {
-                this.applyEditingMode(todo.id);
-                this.notify();
-            });
-            listForm.addEventListener('submit', e => {
-                this.changeTaskName(todo.id, e);
-                this.notify();
-            });
-            cancelButton.addEventListener('click', e => {
-                this.cancelEditingMode(todo.id, e);
-                this.notify();
-            })
-        });
-        localStorage.setItem('state', JSON.stringify(State));
+        }
+        localStorage.setItem('store', JSON.stringify(State.getState().todos));
     }
 }

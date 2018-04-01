@@ -5,6 +5,5 @@ sources/
 logs/
 .htaccess
 /node_modules/
-README.md
 robots.txt
 yarn.lock

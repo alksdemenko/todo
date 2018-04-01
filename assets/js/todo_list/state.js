@@ -1,10 +1,11 @@
-// const storage = localStorage.getItem('state');
-// const state = storage ? JSON.parse(storage) : {todos: []};
+const storage = localStorage.getItem('store');
 
 class State {
     constructor() {
         this.subscribers = [];
-        this.state = {todos: []};
+        this.state = {
+            todos: storage ? JSON.parse(storage) : []
+        };
     }
 
     subscribe(fn) {
@@ -12,7 +13,8 @@ class State {
     }
 
     setState(obj) {
-        return Object.assign({}, obj, this.state);
+        this.state = Object.assign({}, this.state, obj);
+        this.notify();
     }
 
     getState(){
